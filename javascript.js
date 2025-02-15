@@ -14,58 +14,108 @@ function getComputerChoice() {;
   }
 }
 
-function getHumanChoice() {
-  let input = prompt("Give your choice (rock, paper, scissors)");
-  let humanChoice = input.toLowerCase();
-  return humanChoice;
+function getHumanChoice(element) {
+  return element.textContent;
 }
 
-function notifyWin(humanChoice, computerChoice) {
+function notifyRoundWin(humanChoice, computerChoice, elementDisplay) {
+  elementDisplay.textContent = `You win! ${humanChoice} beats ${computerChoice}`;
   console.log(`You win! ${humanChoice} beats ${computerChoice}`);
 }
 
-function notifyLoss(humanChoice, computerChoice) {
+function notifyRoundLoss(humanChoice, computerChoice, elementDisplay) {
+  elementDisplay.textContent = `You lose! ${computerChoice} beats ${humanChoice}`;
   console.log(`You lose! ${computerChoice} beats ${humanChoice}`);
 }
 
-function playGame() {
-  let humanScore = 0;
-  let computerScore = 0;
+function restartRoundCounter() {
+  numCurrentRound = 0;
+}
 
-  function playRound(humanChoice, computerChoice) {
-    if (humanChoice === computerChoice){
-      console.log("Tie!" );
-    }
-    else if ((humanChoice == "rock") && (computerChoice == "scissors") ||
-    (humanChoice == "paper") && (computerChoice == "rock") ||
-    (humanChoice == "scissors") && (computerChoice == "paper")) {
-      notifyWin(humanChoice, computerChoice);
-      humanScore++;
-    }
-    else {
-      notifyLoss(humanChoice, computerChoice);
-      computerScore++;
-    }
-  }
+function restartScores() {
+  numHumanScore = 0;
+  numComputerScore = 0;
+}
 
-  for (let step = 0; step < 5; step++) {
-    playRound(getComputerChoice(), getHumanChoice());
-  }
+function createDivScores() {
+  const humanScoreDiv = document.createElement("div");
+  const computerScoreDiv = document.createElement("div");
+  humanScoreDiv.textContent = `your score: ${numHumanScore}`;
+  computerScoreDiv.textContent = `computer score: ${numComputerScore}`;
+  document.querySelector(".content").prepend(computerScoreDiv);
+  document.querySelector(".content").prepend(humanScoreDiv);
+  return [humanScoreDiv, computerScoreDiv]
+}
 
-  console.log(`Your score: ${humanScore}. \nComputer score: ${computerScore} \n`);
+function refreshDivScores(arrayDivReferences) {
+  arrayDivReferences.at(0).textContent = `your score: ${numHumanScore}`;
+  arrayDivReferences.at(1).textContent = `computer score: ${numComputerScore}`;
+}
 
-  if (humanScore === computerScore) {
-    console.log("Tie. No one won the game!!");
+function deleteDivScores(arrayDivReferences) {
+  arrayDivReferences.forEach((div) => {
+    div.remove()
+  })
+}
+
+let gameRunning = false;
+let arrayDivReferences = [];
+let numCurrentRound = 0;
+let numHumanScore = 0;
+let numComputerScore = 0;
+
+function processRound(e) {
+  const elementDisplay = document.querySelector(".content__display");
+  if (!gameRunning) {
+    gameRunning = true;
+    arrayDivReferences = createDivScores();
   }
-  else if (humanScore > computerScore) {
-    console.log("You win the game!!");
-  }
-  else if (humanScore < computerScore) {
-    console.log("You lose the game :(");
+  playRound(getHumanChoice(e.target).toLowerCase(), getComputerChoice(), elementDisplay);
+  if (numComputerScore === 5 || numHumanScore === 5) {
+    gameRunning = false;
+    announceWinner(numHumanScore, numComputerScore, elementDisplay);
+    deleteDivScores(arrayDivReferences);
+    restartScores();
+    restartRoundCounter();
   }
 }
 
-playGame()
+function playRound(humanChoice, computerChoice, elementDisplay) {
 
+  if (humanChoice === computerChoice){
+    elementDisplay.textContent = "Tie!"
+    console.log("Tie!");
+  }
+  else if ((humanChoice == "rock") && (computerChoice == "scissors") ||
+  (humanChoice == "paper") && (computerChoice == "rock") ||
+  (humanChoice == "scissors") && (computerChoice == "paper")) {
+    notifyRoundWin(humanChoice, computerChoice, elementDisplay);
+    numHumanScore++;
+  }
+  else {
+    notifyRoundLoss(humanChoice, computerChoice, elementDisplay);
+    numComputerScore++;
+  }
+  refreshDivScores(arrayDivReferences);
+}
 
+function announceWinner(numHumanScore, numComputerScore, elementDisplay) {
+  console.log(`Your score: ${numHumanScore}. \nComputer score: ${numComputerScore} \n`);
+  if (numHumanScore === numComputerScore) {
+    console.log("Tie. No one won the game!!");
+    elementDisplay.textContent = `Tie. ${numHumanScore} against ${numComputerScore}, No one won the game!!`;
+  }
+  else if (numHumanScore > numComputerScore) {
+    console.log(`${numHumanScore} against ${numComputerScore}, you win the game!!`);
+    elementDisplay.textContent = `${numHumanScore} against ${numComputerScore} you win the game!!` ;
+  }
+  else if (numHumanScore < numComputerScore) {
+    console.log(`${numHumanScore} against ${numComputerScore}, you lose the game :(`);
+    elementDisplay.textContent = `${numHumanScore} against ${numComputerScore} you lose the game :(`;
+  }
+}
 
+const buttons = document.querySelectorAll("button")
+buttons.forEach((button) => {
+  button.addEventListener("click", processRound)
+})
