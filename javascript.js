@@ -81,7 +81,6 @@ function processRound(e) {
 }
 
 function playRound(humanChoice, computerChoice, elementDisplay) {
-
   if (humanChoice === computerChoice){
     elementDisplay.textContent = "Tie!"
     console.log("Tie!");
